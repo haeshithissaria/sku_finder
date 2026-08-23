@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SKU Management System</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col">
+
+  <!-- Navigation Header -->
+  <header class="bg-slate-900 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+      <h1 class="text-xl font-bold flex items-center gap-2">
+        <i data-lucide="boxes" class="w-6 h-6 text-indigo-400"></i> SKU Portal
+      </h1>
+      <nav class="flex gap-2">
+        <button onclick="switchTab('page1')" id="tab-page1" class="px-4 py-2 rounded-lg font-medium transition bg-indigo-600 text-white">
+          Admin Dashboard
+        </button>
+        <button onclick="switchTab('page2')" id="tab-page2" class="px-4 py-2 rounded-lg font-medium transition hover:bg-slate-800 text-gray-300">
+          User Search
+        </button>
+        <button onclick="switchTab('page3')" id="tab-page3" class="px-4 py-2 rounded-lg font-medium transition hover:bg-slate-800 text-gray-300">
+          Analytics & Settings
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+
+    <!-- PAGE 1: ADMIN DASHBOARD -->
+    <section id="page1" class="space-y-8">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> Add New Product
+        </h2>
+        
+        <form id="add-product-form" onsubmit="handleAddProduct(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">SKU Name / Code</label>
+            <input type="text" id="sku-input" placeholder="e.g. KJ1640" required
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Targeted URL Link</label>
+            <input type="url" id="link-input" placeholder="https://example.com/product" required
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div class="flex items-end">
+            <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition">
+              <i data-lucide="plus" class="w-4 h-4"></i> Add Product
+            </button>
+          </div>
+          <a href="bulk-page.html" class="px-4 py-2 rounded-lg font-medium transition bg-slate-800 hover:bg-slate-700 text-indigo-400 flex items-center gap-1.5 border border-slate-700 ml-2">
+              <i data-lucide="upload-cloud" class="w-4 h-4"></i> Bulk Upload
+          </a>
+        </form>
+        <div id="admin-message" class="mt-3 text-sm hidden"></div>
+      </div>
+
+      <!-- Product Inventory Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b bg-gray-50 flex flex-wrap justify-between items-center gap-4">
+          <h3 class="font-bold text-gray-800">Inventory Catalog</h3>
+          <div class="relative w-full sm:w-64">
+            <input type="text" id="admin-search-input" oninput="renderAdminTable()" placeholder="Search catalog SKU..."
+              class="w-full pl-9 pr-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-gray-100 border-b text-gray-600 uppercase text-xs font-semibold">
+              <tr>
+                <th class="py-3 px-4 w-16">S.No</th>
+                <th class="py-3 px-4">SKU Name</th>
+                <th class="py-3 px-4">Targeted Link</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-gray-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2: USER SKU FINDER -->
+    <section id="page2" class="hidden space-y-6 max-w-2xl mx-auto">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Find Product by SKU</h2>
+        <p class="text-sm text-gray-500 mb-6">Enter exact SKU or key prefix (e.g., "1640" or "KJ")</p>
+
+        <form onsubmit="handleUserSearch(event)" class="flex gap-2 mb-4">
+          <input type="text" id="user-search-input" placeholder="Enter SKU..." required
+            class="flex-grow px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg uppercase">
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-lg flex items-center gap-2 transition">
+            <i data-lucide="search" class="w-5 h-5"></i> Search
+          </button>
+        </form>
+
+        <div id="search-feedback" class="text-left hidden"></div>
+      </div>
+
+      <!-- Multi-Match Results -->
+      <div id="multi-result-container" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden">
+        <div class="p-4 bg-amber-50 border-b border-amber-200 text-amber-800 text-sm font-medium flex items-center gap-2">
+          <i data-lucide="alert-circle" class="w-4 h-4"></i> Multiple matching SKUs found. Select an item below:
+        </div>
+        <table class="w-full text-left text-sm">
+          <thead class="bg-gray-50 border-b text-gray-600 uppercase text-xs font-semibold">
+            <tr>
+              <th class="py-3 px-4">SKU Code</th>
+              <th class="py-3 px-4">Link Preview</th>
+              <th class="py-3 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="multi-result-body" class="divide-y divide-gray-100">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAGE 3: STATS & UTILITIES -->
+    <section id="page3" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <p class="text-xs font-semibold text-gray-500 uppercase">Total Items Stored</p>
+          <p id="stat-total-skus" class="text-3xl font-extrabold text-indigo-600 mt-2">0</p>
+        </div>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h3 class="font-bold text-gray-900 mb-2">Database Connection</h3>
+        <p class="text-sm text-gray-500 mb-4">Status: <span id="db-status" class="font-semibold text-amber-600">Connecting to Firebase...</span></p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Firebase JavaScript SDK Modules -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Your Configured Credentials
+    const firebaseConfig = {
+      apiKey: "AIzaSyCCvVLVvphi5VLk30MMiOyvX_HuDG7HdHU",
+      authDomain: "sku-finder-756b7.firebaseapp.com",
+      databaseURL: "https://sku-finder-756b7-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sku-finder-756b7",
+      storageBucket: "sku-finder-756b7.firebasestorage.app",
+      messagingSenderId: "533564999771",
+      appId: "1:533564999771:web:f9a22330ea6a139d40d77e"
+    };
+
+    // Initialize Firebase Services
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const productsRef = ref(db, 'products');
+
+    let products = [];
+
+    // Realtime Listener
+    onValue(productsRef, (snapshot) => {
+      const data = snapshot.val();
+      products = [];
+      if (data) {
+        Object.keys(data).forEach(id => {
+          products.push({ id, ...data[id] });
+        });
+      }
+      document.getElementById('db-status').innerText = "Connected to Database";
+      document.getElementById('db-status').className = "font-semibold text-green-600";
+      
+      renderAdminTable();
+      updateStats();
+    }, (error) => {
+      document.getElementById('db-status').innerText = "Connection Error: " + error.message;
+      document.getElementById('db-status').className = "font-semibold text-red-600";
+    });
+
+    // Window Scoped Functions for HTML Event Handlers
+    window.switchTab = function(tabId) {
+      ['page1', 'page2', 'page3'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+        document.getElementById(`tab-${id}`).className = "px-4 py-2 rounded-lg font-medium transition hover:bg-slate-800 text-gray-300";
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      document.getElementById(`tab-${tabId}`).className = "px-4 py-2 rounded-lg font-medium transition bg-indigo-600 text-white";
+      
+      if (tabId === 'page1') renderAdminTable();
+      if (tabId === 'page3') updateStats();
+    };
+
+    function getSortedProducts(list) {
+      return [...list].sort((a, b) => a.sku.localeCompare(b.sku, undefined, { numeric: true, sensitivity: 'base' }));
+    }
+
+    window.renderAdminTable = function() {
+      const tbody = document.getElementById('admin-table-body');
+      const searchQuery = document.getElementById('admin-search-input').value.trim().toUpperCase();
+      
+      let filtered = products.filter(p => p.sku.toUpperCase().includes(searchQuery));
+      let sorted = getSortedProducts(filtered);
+
+      tbody.innerHTML = '';
+
+      if (sorted.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">No products found</td></tr>`;
+        return;
+      }
+
+      sorted.forEach((prod, index) => {
+        const row = document.createElement('tr');
+        row.className = "hover:bg-gray-50 transition";
+        row.innerHTML = `
+          <td class="py-3 px-4 font-mono text-gray-500">${index + 1}</td>
+          <td class="py-3 px-4 font-bold text-gray-800">${escapeHtml(prod.sku)}</td>
+          <td class="py-3 px-4">
+            <a href="${escapeHtml(prod.link)}" target="_blank" class="text-indigo-600 hover:underline flex items-center gap-1 max-w-xs truncate">
+              ${escapeHtml(prod.link)} <i data-lucide="external-link" class="w-3 h-3 flex-shrink-0"></i>
+            </a>
+          </td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="removeProduct('${prod.id}')" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 hover:bg-red-100 py-1 px-2 rounded flex items-center gap-1 ml-auto">
+              <i data-lucide="trash" class="w-3 h-3"></i> Delete
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      lucide.createIcons();
+    };
+
+    window.handleAddProduct = async function(e) {
+      e.preventDefault();
+      const skuInput = document.getElementById('sku-input');
+      const linkInput = document.getElementById('link-input');
+      const msg = document.getElementById('admin-message');
+
+      const rawSku = skuInput.value.trim().toUpperCase();
+      const rawLink = linkInput.value.trim();
+
+      // Check Duplicates
+      const duplicateSku = products.some(p => p.sku.toUpperCase() === rawSku);
+      const duplicateLink = products.some(p => p.link.toLowerCase() === rawLink.toLowerCase());
+
+      if (duplicateSku || duplicateLink) {
+        msg.className = "mt-3 text-sm p-3 rounded-lg bg-red-50 text-red-700 border border-red-200 block";
+        msg.innerHTML = duplicateSku ? `<strong>Duplicate Blocked:</strong> SKU "${rawSku}" already exists!` 
+                                     : `<strong>Duplicate Blocked:</strong> Targeted Link already assigned!`;
+        return;
+      }
+
+      try {
+        await push(productsRef, {
+          sku: rawSku,
+          link: rawLink,
+          createdAt: Date.now()
+        });
+
+        skuInput.value = '';
+        linkInput.value = '';
+
+        msg.className = "mt-3 text-sm p-3 rounded-lg bg-green-50 text-green-700 border border-green-200 block";
+        msg.innerHTML = `Successfully added <strong>${rawSku}</strong> to Firebase!`;
+        setTimeout(() => msg.classList.add('hidden'), 3000);
+      } catch (err) {
+        msg.className = "mt-3 text-sm p-3 rounded-lg bg-red-50 text-red-700 border border-red-200 block";
+        msg.innerText = "Error saving to Firebase: " + err.message;
+      }
+    };
+
+    window.removeProduct = async function(id) {
+      if (confirm('Delete this product permanently?')) {
+        await remove(ref(db, `products/${id}`));
+      }
+    };
+
+    window.handleUserSearch = function(e) {
+      e.preventDefault();
+      const query = document.getElementById('user-search-input').value.trim().toUpperCase();
+      const feedback = document.getElementById('search-feedback');
+      const multiContainer = document.getElementById('multi-result-container');
+      const multiBody = document.getElementById('multi-result-body');
+
+      feedback.classList.add('hidden');
+      multiContainer.classList.add('hidden');
+      multiBody.innerHTML = '';
+
+      if (!query) return;
+
+      // Exact Match Search
+      const exactMatch = products.find(p => p.sku.toUpperCase() === query);
+
+      if (exactMatch) {
+        feedback.className = "mt-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800 block text-center";
+        feedback.innerHTML = `<p class="font-bold">Exact Match Found! Opening targeted link...</p>`;
+        setTimeout(() => window.open(exactMatch.link, '_blank'), 800);
+        return;
+      }
+
+      // Partial Match Search
+      const matches = getSortedProducts(products.filter(p => p.sku.toUpperCase().includes(query)));
+
+      if (matches.length === 0) {
+        feedback.className = "mt-4 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 block text-center font-medium";
+        feedback.innerHTML = `<i data-lucide="x-circle" class="w-5 h-5 inline mr-1"></i> Wrong input / SKU not found. Try again.`;
+      } else {
+        multiContainer.classList.remove('hidden');
+        matches.forEach(prod => {
+          const row = document.createElement('tr');
+          row.className = "hover:bg-gray-50 transition";
+          row.innerHTML = `
+            <td class="py-3 px-4 font-bold text-gray-900">${escapeHtml(prod.sku)}</td>
+            <td class="py-3 px-4 text-gray-500 truncate max-w-xs">${escapeHtml(prod.link)}</td>
+            <td class="py-3 px-4 text-right">
+              <a href="${escapeHtml(prod.link)}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-md text-xs inline-flex items-center gap-1">
+                Open Link <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </td>
+          `;
+          multiBody.appendChild(row);
+        });
+      }
+      lucide.createIcons();
+    };
+
+    function updateStats() {
+      document.getElementById('stat-total-skus').innerText = products.length;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match]));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+  <script>
+    // Disable right-click menu
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Block common DevTools shortcuts
+document.addEventListener('keydown', (e) => {
+  if (
+    e.key === 'F12' ||
+    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+    (e.ctrlKey && e.key === 'U')
+  ) {
+    e.preventDefault();
+  }
+});
+  </script>
+</body>
+</html>
